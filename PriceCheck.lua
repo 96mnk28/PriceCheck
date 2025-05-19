@@ -1,8 +1,8 @@
 addon.name      = 'PriceCheck';
 addon.author    = 'Ethoc';
-addon.version   = '0.02';
+addon.version   = '0.0.3';
 addon.desc      = 'Display the Base npc price of the item being looked at';
-addon.link      = '';
+addon.link      = 'https://github.com/96mnk28/PriceCheck';
 
 -- TODO save textbox position when exiting
 
@@ -75,12 +75,18 @@ end
 ashita.events.register('key', 'key_callback', function (e)
     local TargetItemID = AshitaCore:GetMemoryManager():GetInventory():GetSelectedItemId()
         local base = "";
-        local basetext = "";
+        local stacksize = "";
+        local ahLocation = "";
+        
         local outText = 'Price Check';
+        local baseText = "";
+        local stacksellText = "";
+        local ahLocationText ="";
+        local priceMultiplyer 
     if TargetItemID ~= nil then
        --AshitaCore:GetChatManager():AddChatMessage(8, false, tostring(TargetItemID))
         --local base = "";
-        --local basetext = "";
+        --local baseText = "";
         --local outText = 'Price Check';
         local menuName = GetMenuName();
         -- only display when these menus are open
@@ -103,18 +109,42 @@ ashita.events.register('key', 'key_callback', function (e)
             if ((menuNameCheckAcu~=nil) or (menuNameCheckMoneyctr~=nil) or (menuNameCheckInv~=nil) or (menuNameCheckBank~=nil) or (menuNameCheckEquip~=nil) or (menuNameCheckLoot~=nil) or (menuNameCheckDelivery~=nil) or (menuNameCheckShop~=nil))  then
                 base = ItemIDTable[TargetItemID].base;
                 name =  ItemIDTable[TargetItemID].name;
+                stacksize = ItemIDTable[TargetItemID].stacksize;
+                ahLocation = ItemIDTable[TargetItemID].ahLocation;
                 --check for nil text incase it isnt in the table
                 if base ~= nil then 
-                    basetext = " base= ".. base;
+                    if tonumber(base) == 0  then
+                        baseText= "BaseSell= 0";
+                    else
+                        baseText = "BaseSell= ".. base.." ~ "..math.floor(base*1.225);
+                    end
+                    if stacksize ~= nil then
+                        if tonumber(stacksize) > 1 then
+                            if tonumber(base) == 0  then
+                                stackselltxt = ", \nStackSell("..stacksize..")= 0"
+                            else
+                                stackselltxt = ", \nStackSell("..stacksize..")= ".. base * stacksize .."~".. math.floor(base*1.225*stacksize) ;
+                            end
+                        else
+                            stackselltxt = "";
+                        end
+                    else
+                        stackselltxt = ""
+                    end
                 else
-                    basetext = "";
+                    baseText = "";
                 end
+   
                 if name ~= nil then 
-                    nametext = name .. '\n';
+                    nametext = name;
                 else
                     nametext = "";
                 end
-                outText = outText .. '\n'..nametext .."ID= "..TargetItemID..basetext;
+
+                if ahLocation~= nil then
+                    ahLocationText = ahLocation;
+                end
+                outText = outText .. '\n'..nametext .." ["..TargetItemID..']\n'..baseText .. stackselltxt..'\n'..ahLocationText;
                 PriceCheck.FontObject.text = outText;
             else
                 TargetItemID=""
