@@ -1,13 +1,12 @@
 addon.name      = 'PriceCheck';
 addon.author    = 'Ethoc';
-addon.version   = '0.0.4';
+addon.version   = '0.0.5';
 addon.desc      = 'Display the Base npc price of the item being looked at';
 addon.link      = 'https://github.com/96mnk28/PriceCheck';
 
 --[[ TODO 
     save textbox position when exiting
-    currently dosnt work with gamepad because i run on key input. . . Change event register to something else
-    add description tag to some items that are used in hxi quests
+    
     add the ability to toggle lines of the text on and off 
 --]]
 --Horizon Addon approval 
@@ -16,9 +15,11 @@ addon.link      = 'https://github.com/96mnk28/PriceCheck';
 require('common');
 local ItemIDTable = require('ItemIDTable');
 local fonts = require('fonts');
+local settings = require('settings');
+
 local PriceCheck = T{};
 local useHxiData = 1-- set this to 1 to use hxi data set to 0 to use just lsb data
-local fontSettings = T{
+local defaults = T{
 	visible = true,
 	font_family = 'Calibri',--Arial
 	font_height = 13,
@@ -31,13 +32,17 @@ local fontSettings = T{
 	}
 };
 
+
+
+
 PriceCheck.Initialize = function()
-	PriceCheck.FontObject = fonts.new(fontSettings);	
+	PriceCheck.FontObject = fonts.new(defaults);	
 end
 PriceCheck.Initialize();
 
 ----------------------------------
 --- Check what menu we have open
+--- Thank you Throny
 ------------------------------------
 local pGameMenu = ashita.memory.find('FFXiMain.dll', 0, "8B480C85C974??8B510885D274??3B05", 16, 0);
 local function GetMenuName()
@@ -54,10 +59,11 @@ end
 ------------------------------------
 
 
-------------------------------------
----run on keybord input
-------------------------------------
-ashita.events.register('key', 'key_callback', function (e)
+--[[
+* event: d3d_present
+* desc : Event called when the Direct3D device is presenting a scene.
+--]]
+ashita.events.register('d3d_present', 'present_cb', function ()  -- changed from "ashita.events.register('key', 'key_callback', function ()" dosnt seem to have any negative effect on game performance
     local TargetItemID = AshitaCore:GetMemoryManager():GetInventory():GetSelectedItemId()
     local base = ""; 
     local hxibase = ""; 
@@ -160,3 +166,4 @@ ashita.events.register('key', 'key_callback', function (e)
         end--]]
     end
 end);
+
